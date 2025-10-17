@@ -186,6 +186,30 @@ footer {
   word-break: break-all;
 }
 
+.participant-delete {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.participant-delete:hover,
+.participant-delete:focus {
+  background-color: rgba(198, 40, 40, 0.08);
+  color: #b71c1c;
+  outline: none;
+}
+
+.participant-item.none {
+  display: block;
+}
+
 .participants-list.empty .none {
   color: #666;
   font-style: italic;

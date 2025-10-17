@@ -31,9 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${details.participants
                   .map(
                     (p) => `
-                  <li class="participant-item">
+                  <li class="participant-item" data-email="${p}" data-activity="${name}">
                     <span class="participant-badge">${(p[0] || "").toUpperCase()}</span>
                     <span class="participant-email">${p}</span>
+                    <button class="participant-delete" aria-label="Remove ${p}" title="Remove ${p}">×</button>
                   </li>`
                   )
                   .join("")}
@@ -118,4 +119,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   fetchActivities();
+  
+  // Delegate click handler for delete buttons
+  activitiesList.addEventListener("click", async (event) => {
+    const deleteBtn = event.target.closest(".participant-delete");
+    if (!deleteBtn) return;
+
+    const li = deleteBtn.closest(".participant-item");
+    const email = li && li.getAttribute("data-email");
+    const activity = li && li.getAttribute("data-activity");
+
+    if (!email || !activity) return;
+
+    // Optimistic UI: disable button while request in flight
+    deleteBtn.disabled = true;
+
+    try {
+      const resp = await fetch(
+        `/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(email)}`,
+        { method: "DELETE" }
+      );
+
+      const result = await resp.json();
+
+      if (resp.ok) {
+        messageDiv.textContent = result.message;
+        messageDiv.className = "message success";
+        // Refresh list to reflect removal
+        fetchActivities();
+      } else {
+        messageDiv.textContent = result.detail || "Failed to remove participant";
+        messageDiv.className = "message error";
+        deleteBtn.disabled = false;
+      }
+
+      messageDiv.classList.remove("hidden");
+
+      setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+    } catch (err) {
+      console.error("Error unregistering participant:", err);
+      messageDiv.textContent = "Failed to remove participant. Please try again.";
+      messageDiv.className = "message error";
+      messageDiv.classList.remove("hidden");
+      deleteBtn.disabled = false;
+    }
+  });
 });
